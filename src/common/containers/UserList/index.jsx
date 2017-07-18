@@ -8,6 +8,9 @@ import {findChapters} from 'src/common/actions/chapter'
 import {findUsers} from 'src/common/actions/user'
 import UserList from 'src/common/components/UserList'
 import {toSortedArray, userCan} from 'src/common/util'
+import Flex from 'src/common/components/Layout/Flex'
+
+import styles from './index.css'
 
 const UserModel = {
   avatarUrl: {title: 'Photo', type: String},
@@ -38,15 +41,16 @@ class UserListContainer extends Component {
       const userURL = userCan(currentUser, 'viewUser') ?
         `/users/${user.handle}` : null
       const mailtoURL = `mailto:${user.email}`
+      const altTitle = `${user.name} (${user.handle})`
       return Object.assign({}, user, {
         avatarUrl: (
           <Flex alignItems_center>
-          <img
-            className={styles.userImage}
-            src={user.avatarUrl}
-            alt={altTitle}
-            title={altTitle}
-            />
+            <img
+              className={styles.userImage}
+              src={user.avatarUrl}
+              alt={altTitle}
+              title={altTitle}
+              />
           </Flex>
         ),
         handle: <Link to={userURL}>{user.handle}</Link>,

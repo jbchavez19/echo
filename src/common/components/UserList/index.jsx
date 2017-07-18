@@ -3,9 +3,6 @@ import Helmet from 'react-helmet'
 
 import ContentHeader from 'src/common/components/ContentHeader'
 import ContentTable from 'src/common/components/ContentTable'
-import Flex from 'src/common/components/Layout/Flex'
-
-import styles from './index.css'
 
 export default class UserList extends Component {
   render() {
