@@ -1,4 +1,5 @@
 import React, {Component, PropTypes} from 'react'
+import {Link} from 'react-router'
 import {push} from 'react-router-redux'
 import {connect} from 'react-redux'
 
@@ -7,11 +8,19 @@ import {findChapters} from 'src/common/actions/chapter'
 import ChapterList from 'src/common/components/ChapterList'
 import {userCan, toSortedArray} from 'src/common/util'
 
+const ChapterModel = {
+  name: {type: String},
+  channelName: {title: 'Channel', type: String},
+  cycleNumber: {title: 'Cycle', type: Number},
+  cycleState: {title: 'State', type: String},
+  activeProjectCount: {title: 'Active Projects', type: Number},
+  activeMemberCount: {title: 'Active Members', type: Number},
+}
+
 class ChapterListContainer extends Component {
   constructor(props) {
     super(props)
     this.handleClickCreate = this.handleClickCreate.bind(this)
-    this.handleSelectRow = this.handleSelectRow.bind(this)
   }
 
   componentDidMount() {
@@ -29,10 +38,6 @@ class ChapterListContainer extends Component {
     this.props.navigate('/chapters/new')
   }
 
-  handleSelectRow(row) {
-    this.props.navigate(`/chapters/${this.props.chapters[row].id}`)
-  }
-
   render() {
     const {isBusy, chapters, currentUser} = this.props
 
@@ -40,13 +45,27 @@ class ChapterListContainer extends Component {
       return null
     }
 
+    const chapterData = (chapters || []).map(chapter => {
+      const chapterURL = `/chapters/${chapter.id}`
+      const cycle = chapter.latestCycle || {}
+      return {
+        name: userCan(currentUser, 'updateChapter') ? (
+          <Link to={chapterURL}>{chapter.name}</Link>
+        ) : chapter.name,
+        channelName: chapter.channelName,
+        activeProjectCount: chapter.activeProjectCount || '--',
+        activeMemberCount: chapter.activeMemberCount || '--',
+        cycleNumber: cycle.cycleNumber,
+        cycleState: cycle.state,
+      }
+    })
+
     return (
       <ChapterList
         allowCreate={userCan(currentUser, 'createChapter')}
-        allowSelect={userCan(currentUser, 'updateChapter')}
-        chapters={chapters}
+        chapterData={chapterData}
+        chapterModel={ChapterModel}
         onClickCreate={this.handleClickCreate}
-        onSelectRow={this.handleSelectRow}
         />
     )
   }

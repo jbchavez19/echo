@@ -1,6 +1,8 @@
 import React, {Component, PropTypes} from 'react'
+import {Link} from 'react-router'
 import {connect} from 'react-redux'
 import {push} from 'react-router-redux'
+import FontIcon from 'react-toolbox/lib/font_icon'
 
 import ProjectList from 'src/common/components/ProjectList'
 import {showLoad, hideLoad} from 'src/common/actions/app'
@@ -9,11 +11,22 @@ import {findUsers} from 'src/common/actions/user'
 import {findPhases} from 'src/common/actions/phase'
 import {userCan} from 'src/common/util'
 
+import styles from './index.scss'
+
+const ProjectModel = {
+  name: {type: String},
+  cycleNumber: {title: 'Cycle', type: String},
+  phaseNumber: {title: 'Phase', type: String},
+  state: {title: 'State', type: String},
+  goalTitle: {title: 'Goal', type: String},
+  hasArtifact: {title: 'Artifact?', type: String},
+  memberHandles: {title: 'Members', type: String},
+}
+
 class ProjectListContainer extends Component {
   constructor(props) {
     super(props)
     this.handleClickImport = this.handleClickImport.bind(this)
-    this.handleSelectRow = this.handleSelectRow.bind(this)
   }
 
   componentDidMount() {
@@ -31,18 +44,44 @@ class ProjectListContainer extends Component {
     this.props.navigate('/projects/new')
   }
 
-  handleSelectRow(row) {
-    this.props.navigate(`/projects/${this.props.projects[row].name}`)
-  }
-
   render() {
     const {isBusy, currentUser, projects} = this.props
+
+    const projectData = projects.map(project => {
+      const cycle = project.cycle || {}
+      const phase = project.phase || {}
+      const projectGoal = project.goal || {}
+      const projectURL = `/projects/${project.name}`
+      const memberHandles = (project.members || []).map(member => {
+        const memberURL = `/users/${member.handle}`
+        return <Link key={member.handle} to={memberURL}>{member.handle}</Link>
+      }).reduce((a, b) => [a, ', ', b])
+      return {
+        memberHandles: <span>{memberHandles}</span>,
+        name: userCan(currentUser, 'viewProject') ? (
+          <Link to={projectURL}>{project.name}</Link>
+        ) : project.name,
+        state: cycle.state,
+        goalTitle: (
+          <Link to={projectGoal.url} target="_blank">
+            {projectGoal.title}
+          </Link>
+        ),
+        cycleNumber: cycle.cycleNumber,
+        phaseNumber: phase.number,
+        hasArtifact: project.artifactURL ? (
+          <Link to={project.artifactURL} target="_blank">
+            <FontIcon className={styles.fontIcon} value="open_in_new"/>
+          </Link>
+        ) : null
+      }
+    })
+
     return isBusy ? null : (
       <ProjectList
-        projects={projects}
-        allowSelect={userCan(currentUser, 'viewProject')}
+        projectData={projectData}
+        projectModel={ProjectModel}
         allowImport={userCan(currentUser, 'importProject')}
-        onSelectRow={this.handleSelectRow}
         onClickImport={this.handleClickImport}
         onLoadMoreClicked={this.props.handleLoadMore}
         />

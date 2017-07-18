@@ -11,12 +11,31 @@ import ChapterList from 'src/common/components/ChapterList'
 describe(testContext(__filename), function () {
   before(async function () {
     const chapters = await factory.buildMany('chapter', 3)
+    const chapterData = (chapters || []).map(chapter => {
+      const cycle = chapter.latestCycle || {}
+      return {
+        name: chapter.name,
+        channelName: chapter.channelName,
+        activeProjectCount: chapter.activeProjectCount || '--',
+        activeMemberCount: chapter.activeMemberCount || '--',
+        cycleNumber: cycle.cycleNumber,
+        cycleState: cycle.state,
+      }
+    })
+    const chapterModel = {
+      name: {type: String},
+      channelName: {title: 'Channel', type: String},
+      cycleNumber: {title: 'Cycle', type: Number},
+      cycleState: {title: 'State', type: String},
+      activeProjectCount: {title: 'Active Projects', type: Number},
+      activeMemberCount: {title: 'Active Members', type: Number},
+    }
+
     this.getProps = customProps => {
       const baseProps = {
-        chapters,
-        onSelectRow: () => null,
+        chapterModel,
+        chapterData,
         onClickCreate: () => null,
-        allowSelect: false,
         allowCreate: false,
       }
       return customProps ? Object.assign({}, baseProps, customProps) : baseProps
@@ -40,43 +59,6 @@ describe(testContext(__filename), function () {
 
       expect(clicked).to.equal(true)
     })
-
-    it('onSelectRow is invoked when row is selected if allowSelect is true', function () {
-      let clicked = false
-      const props = this.getProps({
-        allowSelect: true,
-        onSelectRow: () => {
-          clicked = true
-        },
-      })
-
-      const root = mount(React.createElement(ChapterList, props))
-      root.find('Table')
-        .children()
-        .find('td')
-        .first()
-        .simulate('click')
-
-      expect(clicked).to.equal(true)
-    })
-
-    it('onSelectRow is invoked when row is selected if allowSelect is false', function () {
-      let clicked = false
-      const props = this.getProps({
-        onSelectRow: () => {
-          clicked = true
-        },
-      })
-
-      const root = mount(React.createElement(ChapterList, props))
-      root.find('Table')
-        .children()
-        .find('td')
-        .first()
-        .simulate('click')
-
-      expect(clicked).to.equal(false)
-    })
   })
 
   describe('rendering:', function () {
@@ -93,7 +75,7 @@ describe(testContext(__filename), function () {
     })
 
     it('renders "no chapters" message if there are no chapters.', function () {
-      const root = shallow(React.createElement(ChapterList, this.getProps({chapters: []})))
+      const root = shallow(React.createElement(ChapterList, this.getProps({chapterData: []})))
       expect(root.html()).to.match(/no chapters/i)
     })
   })

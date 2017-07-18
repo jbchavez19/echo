@@ -19,6 +19,7 @@ export default function findProjects({page, identifiers} = {}) {
           }
           goal {
             title
+            url
           }
         }
       }

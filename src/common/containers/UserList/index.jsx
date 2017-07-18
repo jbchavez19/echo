@@ -1,4 +1,5 @@
 import React, {Component, PropTypes} from 'react'
+import {Link} from 'react-router'
 import {push} from 'react-router-redux'
 import {connect} from 'react-redux'
 
@@ -8,12 +9,17 @@ import {findUsers} from 'src/common/actions/user'
 import UserList from 'src/common/components/UserList'
 import {toSortedArray, userCan} from 'src/common/util'
 
-class UserListContainer extends Component {
-  constructor(props) {
-    super(props)
-    this.handleSelectRow = this.handleSelectRow.bind(this)
-  }
+const UserModel = {
+  avatarUrl: {title: 'Photo', type: String},
+  handle: {type: String},
+  name: {type: String},
+  chapterName: {title: 'Chapter', type: String},
+  phaseNumber: {title: 'Phase', type: Number},
+  email: {type: String},
+  active: {type: String},
+}
 
+class UserListContainer extends Component {
   componentDidMount() {
     this.props.showLoad()
     this.props.fetchData()
@@ -25,18 +31,35 @@ class UserListContainer extends Component {
     }
   }
 
-  handleSelectRow(row) {
-    this.props.navigate(`/users/${this.props.users[row].handle}`)
-  }
-
   render() {
     const {users, isBusy, currentUser} = this.props
+
+    const userData = users.map(user => {
+      const userURL = userCan(currentUser, 'viewUser') ?
+        `/users/${user.handle}` : null
+      const mailtoURL = `mailto:${user.email}`
+      return Object.assign({}, user, {
+        avatarUrl: (
+          <Flex alignItems_center>
+          <img
+            className={styles.userImage}
+            src={user.avatarUrl}
+            alt={altTitle}
+            title={altTitle}
+            />
+          </Flex>
+        ),
+        handle: <Link to={userURL}>{user.handle}</Link>,
+        name: <Link to={userURL}>{user.name}</Link>,
+        chapterName: (user.chapter || {}).name,
+        phaseNumber: ((user || {}).phase || {}).number,
+        email: <Link to={mailtoURL}>{user.email}</Link>,
+        active: user.active ? 'Yes' : 'No',
+      })
+    })
+
     return isBusy ? null : (
-      <UserList
-        users={users}
-        allowSelect={userCan(currentUser, 'viewUser')}
-        onSelectRow={this.handleSelectRow}
-        />
+      <UserList userModel={UserModel} userData={userData}/>
     )
   }
 }

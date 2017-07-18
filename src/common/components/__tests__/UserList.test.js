@@ -9,22 +9,34 @@ import UserList from 'src/common/components/UserList'
 
 describe(testContext(__filename), function () {
   before(function () {
-    const users = [
+    const userModel = {
+      handle: {type: String},
+      name: {type: String},
+      chapterName: {title: 'Chapter', type: String},
+      phaseNumber: {title: 'Phase', type: Number},
+      email: {type: String},
+      active: {type: String},
+    }
+    const userData = [
       {
-        id: 'abcd1234',
         name: 'Ivanna Lerntokode',
         handle: 'ivannalerntokode',
-        chapter: {id: 'wxyz9876', name: 'Over the Rainbow'}
+        chapterName: 'Over the Rainbow',
+        phaseNumber: 4,
+        email: 'walks@thebeach',
+        active: 'Yes',
       },
       {
-        id: 'efgf5678',
         name: 'Already Lerndtokode!',
         handle: 'alreadylerndtokode',
-        chapter: {id: '9876wxyz', name: 'Under the Rainbow'}
+        chapterName: 'Under the Rainbow',
+        phaseNumber: 3,
+        email: 'swims@thepool',
+        active: 'Yes',
       }
     ]
     this.getProps = customProps => {
-      return Object.assign({users}, customProps || {})
+      return Object.assign({userData, userModel}, customProps || {})
     }
   })
 
@@ -34,7 +46,7 @@ describe(testContext(__filename), function () {
       const root = mount(React.createElement(UserList, props))
       const userRows = root.find('TableRow')
 
-      expect(userRows.length).to.equal(props.users.length)
+      expect(userRows.length).to.equal(props.userData.length)
     })
   })
 })
